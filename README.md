@@ -7,8 +7,21 @@
 ![Vite](https://img.shields.io/badge/Vite-5-646cff?style=flat-square&logo=vite&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-06b6d4?style=flat-square&logo=tailwindcss&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ed?style=flat-square&logo=docker&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-Deployed-000000?style=flat-square&logo=vercel&logoColor=white)
+![Railway](https://img.shields.io/badge/Railway-Deployed-0b0d0e?style=flat-square&logo=railway&logoColor=white)
 
 A full-stack membership management system for FirstClub — a grocery platform. Members subscribe to **Monthly / Quarterly / Yearly** plans across **Silver / Gold / Platinum** tiers with DB-driven configurable benefits. Admins can edit prices, tier multipliers, and benefits live without redeployment.
+
+---
+
+## Live Demo
+
+| Service | URL |
+|---|---|
+| Frontend | **https://firstclub-membership-pjq4.vercel.app** |
+| Backend API | **https://firstclub-membership-production.up.railway.app** |
+
+> Use the demo credentials below to log in — no signup required.
 
 ---
 
@@ -58,9 +71,9 @@ A full-stack membership management system for FirstClub — a grocery platform. 
 
 ```mermaid
 graph TD
-    FE["React + Vite Frontend\n(localhost:5173)"]
-    BE["Spring Boot API\n(localhost:8080)"]
-    DB[(PostgreSQL\nlocalhost:5433)]
+    FE["React + Vite Frontend\nVercel — firstclub-membership-pjq4.vercel.app"]
+    BE["Spring Boot API\nRailway — firstclub-membership-production.up.railway.app"]
+    DB[(PostgreSQL\nRailway managed)]
 
     FE -->|REST /api/**| BE
     BE --> DB
@@ -124,7 +137,7 @@ first-club-assignment/
 
 ---
 
-## Getting Started
+## Getting Started (Local Development)
 
 ### Prerequisites
 - Java 21+
@@ -155,6 +168,46 @@ npm install
 npm run dev
 # UI available at http://localhost:5173
 ```
+
+---
+
+## Deployment
+
+The project is deployed on **Railway** (backend + PostgreSQL) and **Vercel** (frontend).
+
+### Backend — Railway
+
+1. Create a new Railway project and add a **PostgreSQL** plugin.
+2. Connect the GitHub repo (root directory, Maven).
+3. Set a **Procfile** in the repo root:
+   ```
+   web: java -jar target/membership-0.0.1-SNAPSHOT.jar
+   ```
+4. Add these environment variables in Railway → Variables:
+
+   | Variable | Value |
+   |---|---|
+   | `SPRING_DATASOURCE_URL` | `${{Postgres.DATABASE_URL}}` (Railway reference variable) |
+   | `SPRING_DATASOURCE_USERNAME` | `${{Postgres.PGUSER}}` |
+   | `SPRING_DATASOURCE_PASSWORD` | `${{Postgres.PGPASSWORD}}` |
+   | `DDL_AUTO` | `create-drop` (or `update` after first run) |
+   | `ALLOWED_ORIGINS` | Your Vercel frontend URL (e.g. `https://firstclub-membership-pjq4.vercel.app`) |
+
+5. Railway sets the `PORT` variable automatically — no action needed.
+
+### Frontend — Vercel
+
+1. Import the GitHub repo in Vercel.
+2. Set **Root Directory** to `frontend`.
+3. Add this environment variable in Vercel → Settings → Environment Variables:
+
+   | Variable | Value |
+   |---|---|
+   | `VITE_API_URL` | `https://firstclub-membership-production.up.railway.app` |
+
+   > Vite bakes env vars at **build time** — always trigger a redeploy after adding or changing `VITE_API_URL`.
+
+4. Deploy. Vercel auto-detects Vite and runs `npm run build`.
 
 ---
 
