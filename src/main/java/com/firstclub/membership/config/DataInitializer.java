@@ -89,10 +89,14 @@ public class DataInitializer implements ApplicationRunner {
     private void seedUsers() {
         if (userRepository.count() > 0) return;
 
+        // Seeded with varied order data so all 3 tier strategies are demonstrable:
+        // Alice: EARLY_ADOPTER cohort + 12 orders + ₹6,500 spend → GOLD
+        // Bob: ENTERPRISE cohort + 30 orders + ₹18,000 spend → PLATINUM
+        // Carol: REGULAR cohort + 4 orders + ₹1,200 spend → SILVER
         userRepository.saveAll(List.of(
-                new User("Alice Kumar", "alice@example.com", "EARLY_ADOPTER"),
-                new User("Bob Sharma", "bob@example.com", "ENTERPRISE"),
-                new User("Carol Singh", "carol@example.com", "REGULAR")
+                new User("Alice Kumar", "alice@example.com", "EARLY_ADOPTER", 12, new BigDecimal("6500.00")),
+                new User("Bob Sharma", "bob@example.com", "ENTERPRISE", 30, new BigDecimal("18000.00")),
+                new User("Carol Singh", "carol@example.com", "REGULAR", 4, new BigDecimal("1200.00"))
         ));
         log.info("Seeded {} demo users.", userRepository.count());
     }

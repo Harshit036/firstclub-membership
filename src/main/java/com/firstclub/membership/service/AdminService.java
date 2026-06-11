@@ -3,6 +3,7 @@ package com.firstclub.membership.service;
 import com.firstclub.membership.dto.request.UpdateBenefitRequest;
 import com.firstclub.membership.dto.request.UpdatePlanRequest;
 import com.firstclub.membership.dto.request.UpdateTierRequest;
+import com.firstclub.membership.dto.request.UpdateUserStatsRequest;
 import com.firstclub.membership.dto.response.BenefitResponse;
 import com.firstclub.membership.dto.response.PlanResponse;
 import com.firstclub.membership.dto.response.TierResponse;
@@ -11,6 +12,7 @@ import com.firstclub.membership.exception.ResourceNotFoundException;
 import com.firstclub.membership.model.Benefit;
 import com.firstclub.membership.model.MembershipPlan;
 import com.firstclub.membership.model.MembershipTier;
+import com.firstclub.membership.model.User;
 import com.firstclub.membership.repository.MembershipPlanRepository;
 import com.firstclub.membership.repository.MembershipTierRepository;
 import com.firstclub.membership.repository.UserRepository;
@@ -70,5 +72,14 @@ public class AdminService {
         return userRepository.findAll().stream()
                 .map(UserResponse::from)
                 .toList();
+    }
+
+    @Transactional
+    public UserResponse updateUserStats(Long id, UpdateUserStatsRequest request) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+        if (request.orderCount() != null) user.setOrderCount(request.orderCount());
+        if (request.monthlyOrderValue() != null) user.setMonthlyOrderValue(request.monthlyOrderValue());
+        return UserResponse.from(userRepository.save(user));
     }
 }

@@ -3,6 +3,7 @@ package com.firstclub.membership.controller;
 import com.firstclub.membership.dto.request.UpdateBenefitRequest;
 import com.firstclub.membership.dto.request.UpdatePlanRequest;
 import com.firstclub.membership.dto.request.UpdateTierRequest;
+import com.firstclub.membership.dto.request.UpdateUserStatsRequest;
 import com.firstclub.membership.dto.response.BenefitResponse;
 import com.firstclub.membership.dto.response.PlanResponse;
 import com.firstclub.membership.dto.response.TierResponse;
@@ -47,5 +48,12 @@ public class AdminController {
     @GetMapping("/users")
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         return ResponseEntity.ok(adminService.getAllUsers());
+    }
+
+    @PutMapping("/users/{id}")
+    public ResponseEntity<UserResponse> updateUserStats(
+            @PathVariable Long id,
+            @RequestBody UpdateUserStatsRequest request) {
+        return ResponseEntity.ok(adminService.updateUserStats(id, request));
     }
 }

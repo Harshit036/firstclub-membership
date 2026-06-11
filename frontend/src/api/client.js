@@ -25,6 +25,8 @@ export const adminUpdateTier = (id, body) => req(`/admin/tiers/${id}`, { method:
 export const getUsers = () => req('/admin/users')
 export const getUserById = (id) => req(`/users/${id}`)
 export const createUser = (body) => req('/users', { method: 'POST', body: JSON.stringify(body) })
+export const getRecommendedTier = (id) => req(`/users/${id}/recommended-tier`)
+export const adminUpdateUserStats = (id, body) => req(`/admin/users/${id}`, { method: 'PUT', body: JSON.stringify(body) })
 
 // Subscriptions
 export const getActiveSubscription = (userId) => req(`/subscriptions/users/${userId}`)

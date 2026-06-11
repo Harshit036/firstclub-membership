@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import Navbar from '../components/Navbar'
-import { getPlans, getTiers, getUsers, adminUpdatePlan, adminUpdateBenefit, adminUpdateTier } from '../api/client'
+import { getPlans, getTiers, getUsers, adminUpdatePlan, adminUpdateBenefit, adminUpdateTier, adminUpdateUserStats, getRecommendedTier } from '../api/client'
 
 function Toast({ message }) {
   if (!message) return null
@@ -59,6 +59,7 @@ export default function AdminPanel() {
   const [plans, setPlans] = useState([])
   const [tiers, setTiers] = useState([])
   const [users, setUsers] = useState([])
+  const [recommendedTiers, setRecommendedTiers] = useState({})
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState('')
   const [activeTab, setActiveTab] = useState('plans')
@@ -75,6 +76,13 @@ export default function AdminPanel() {
       setPlans(p)
       setTiers(t)
       setUsers(u)
+      const recMap = {}
+      await Promise.all(u.map(async user => {
+        try {
+          recMap[user.id] = await getRecommendedTier(user.id)
+        } catch { /* ignore */ }
+      }))
+      setRecommendedTiers(recMap)
     } finally {
       setLoading(false)
     }
@@ -116,6 +124,18 @@ export default function AdminPanel() {
         : t
       ))
       showToast(`Discount updated to ${discountPercentage}%`)
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
+  async function handleUpdateUserStats(userId, field, value) {
+    try {
+      const updated = await adminUpdateUserStats(userId, { [field]: value })
+      setUsers(prev => prev.map(u => u.id === userId ? updated : u))
+      const rec = await getRecommendedTier(userId)
+      setRecommendedTiers(prev => ({ ...prev, [userId]: rec }))
+      showToast(`Updated — recommended tier: ${rec.recommendedTier}`)
     } catch (err) {
       alert(err.message)
     }
@@ -314,30 +334,60 @@ export default function AdminPanel() {
               <div className="bg-white rounded-2xl border border-[#1b3a2d]/10 shadow-sm overflow-hidden">
                 <div className="px-5 py-4 border-b border-gray-100">
                   <p className="text-sm font-semibold text-[#1b3a2d]">Registered Members</p>
-                  <p className="text-xs text-gray-400 mt-0.5">{users.length} users in the system</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Edit order count or monthly spend to simulate tier promotion</p>
                 </div>
                 <table className="w-full text-sm">
                   <thead className="bg-[#f0f5e8]">
                     <tr>
-                      <th className="text-left px-5 py-3 text-xs font-semibold text-[#1b3a2d]/60 uppercase tracking-wide">ID</th>
                       <th className="text-left px-5 py-3 text-xs font-semibold text-[#1b3a2d]/60 uppercase tracking-wide">Name</th>
-                      <th className="text-left px-5 py-3 text-xs font-semibold text-[#1b3a2d]/60 uppercase tracking-wide">Email</th>
                       <th className="text-left px-5 py-3 text-xs font-semibold text-[#1b3a2d]/60 uppercase tracking-wide">Cohort</th>
+                      <th className="text-left px-5 py-3 text-xs font-semibold text-[#1b3a2d]/60 uppercase tracking-wide">Orders</th>
+                      <th className="text-left px-5 py-3 text-xs font-semibold text-[#1b3a2d]/60 uppercase tracking-wide">Monthly Spend</th>
+                      <th className="text-left px-5 py-3 text-xs font-semibold text-[#1b3a2d]/60 uppercase tracking-wide">Recommended Tier</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
-                    {users.map(user => (
-                      <tr key={user.id} className="hover:bg-[#f0f5e8]/50 transition-colors">
-                        <td className="px-5 py-3.5 text-gray-400 font-mono text-xs">{user.id}</td>
-                        <td className="px-5 py-3.5 font-semibold text-[#1b3a2d]">{user.name}</td>
-                        <td className="px-5 py-3.5 text-gray-500">{user.email}</td>
-                        <td className="px-5 py-3.5">
-                          <span className="text-xs bg-green-100 text-green-800 border border-green-200 px-2 py-0.5 rounded-full font-medium">
-                            {user.cohort || '—'}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
+                    {users.map(user => {
+                      const rec = recommendedTiers[user.id]
+                      return (
+                        <tr key={user.id} className="hover:bg-[#f0f5e8]/50 transition-colors">
+                          <td className="px-5 py-3.5">
+                            <p className="font-semibold text-[#1b3a2d]">{user.name}</p>
+                            <p className="text-xs text-gray-400">{user.email}</p>
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <span className="text-xs bg-green-100 text-green-800 border border-green-200 px-2 py-0.5 rounded-full font-medium">
+                              {user.cohort || '—'}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <EditableField
+                              value={user.orderCount}
+                              onSave={v => handleUpdateUserStats(user.id, 'orderCount', Math.round(v))}
+                              width="w-16"
+                            />
+                          </td>
+                          <td className="px-5 py-3.5">
+                            <EditableField
+                              value={user.monthlyOrderValue}
+                              onSave={v => handleUpdateUserStats(user.id, 'monthlyOrderValue', v)}
+                              prefix="₹"
+                              width="w-24"
+                            />
+                          </td>
+                          <td className="px-5 py-3.5">
+                            {rec ? (
+                              <div>
+                                <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${TIER_BADGE[rec.recommendedTier]}`}>
+                                  {rec.recommendedTier}
+                                </span>
+                                <p className="text-xs text-gray-400 mt-1 max-w-xs">{rec.reason}</p>
+                              </div>
+                            ) : <span className="text-xs text-gray-300">—</span>}
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>

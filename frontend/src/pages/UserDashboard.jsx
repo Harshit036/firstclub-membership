@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext'
 import Navbar from '../components/Navbar'
 import {
   getPlans, getTiers, getActiveSubscription,
-  subscribe, changeTier, cancelSubscription
+  subscribe, changeTier, cancelSubscription, getRecommendedTier
 } from '../api/client'
 
 const TIER_STYLE = {
@@ -143,6 +143,7 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true)
   const [selectedPlan, setSelectedPlan] = useState(null)
   const [selectedTier, setSelectedTier] = useState(null)
+  const [recommendedTier, setRecommendedTier] = useState(null)
   const [actionError, setActionError] = useState('')
   const [actionLoading, setActionLoading] = useState(false)
   const [toast, setToast] = useState('')
@@ -163,6 +164,12 @@ export default function UserDashboard() {
         setSubscription(sub)
       } catch {
         setSubscription(null)
+      }
+      try {
+        const rec = await getRecommendedTier(auth.userId)
+        setRecommendedTier(rec)
+      } catch {
+        setRecommendedTier(null)
       }
     } finally {
       setLoading(false)
@@ -296,6 +303,43 @@ export default function UserDashboard() {
           </section>
         ) : (
           <>
+            {/* Recommended Tier Banner */}
+            {recommendedTier && (
+              <section>
+                <div className={`rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3 border
+                  ${recommendedTier.recommendedTier === 'PLATINUM'
+                    ? 'bg-violet-50 border-violet-200'
+                    : recommendedTier.recommendedTier === 'GOLD'
+                      ? 'bg-amber-50 border-amber-200'
+                      : 'bg-gray-50 border-gray-200'}`}
+                >
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-1">Recommended for you</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`text-sm font-bold px-3 py-1 rounded-full border
+                        ${TIER_STYLE[recommendedTier.recommendedTier]?.badge}`}>
+                        {recommendedTier.recommendedTier} Tier
+                      </span>
+                      <span className="text-xs text-gray-500">Based on: {recommendedTier.reason}</span>
+                    </div>
+                    <p className="text-xs text-gray-400 mt-1">
+                      {recommendedTier.orderCount} orders · ₹{Number(recommendedTier.monthlyOrderValue).toLocaleString()} monthly spend
+                      {recommendedTier.cohort ? ` · ${recommendedTier.cohort} cohort` : ''}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const match = tiers.find(t => t.tierType === recommendedTier.recommendedTier)
+                      if (match) setSelectedTier(match.id)
+                    }}
+                    className="text-sm font-bold bg-[#1b3a2d] text-white px-5 py-2 rounded-xl hover:bg-[#152e23] transition-colors flex-shrink-0"
+                  >
+                    Use This Tier →
+                  </button>
+                </div>
+              </section>
+            )}
+
             {/* Step 1: Choose Tier */}
             <section>
               <div className="flex items-center gap-3 mb-4">

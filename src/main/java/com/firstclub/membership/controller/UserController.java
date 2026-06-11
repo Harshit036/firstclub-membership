@@ -1,6 +1,7 @@
 package com.firstclub.membership.controller;
 
 import com.firstclub.membership.dto.request.CreateUserRequest;
+import com.firstclub.membership.dto.response.RecommendedTierResponse;
 import com.firstclub.membership.dto.response.UserResponse;
 import com.firstclub.membership.service.UserService;
 import jakarta.validation.Valid;
@@ -26,5 +27,10 @@ public class UserController {
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+    @GetMapping("/{id}/recommended-tier")
+    public ResponseEntity<RecommendedTierResponse> getRecommendedTier(@PathVariable Long id) {
+        return ResponseEntity.ok(userService.getRecommendedTier(id));
     }
 }
