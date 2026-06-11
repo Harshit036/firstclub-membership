@@ -16,37 +16,19 @@ A full-stack membership management system for FirstClub — a grocery platform. 
 
 ## Live Demo
 
-| Service | URL |
-|---|---|
-| Frontend | **https://firstclub-membership-pjq4.vercel.app** |
+| Service     | URL                                                        |
+| ----------- | ---------------------------------------------------------- |
+| Frontend    | **https://firstclub-membership-pjq4.vercel.app**           |
 | Backend API | **https://firstclub-membership-production.up.railway.app** |
 
 > Use the demo credentials below to log in — no signup required.
 
 ---
 
-## Screenshots
-
-### Login Portal
-![Login](docs/screenshots/01_login.png)
-
-### Member Dashboard — Tier & Plan Selection
-![User Dashboard](docs/screenshots/02_user_dashboard.png)
-
-### Admin Panel — Plans & Pricing
-![Admin Plans](docs/screenshots/03_admin_plans.png)
-
-### Admin Panel — Tier Multipliers
-![Admin Tiers](docs/screenshots/04_admin_tiers.png)
-
-### Admin Panel — Benefits Management
-![Admin Benefits](docs/screenshots/05_admin_benefits.png)
-
----
-
 ## Features
 
 **Member side**
+
 - Browse and select from 3 tiers (Silver / Gold / Platinum) and 3 billing plans (Monthly / Quarterly / Yearly)
 - Tier-dependent pricing: effective price = base plan price × tier multiplier
 - Live price preview before subscribing
@@ -54,12 +36,14 @@ A full-stack membership management system for FirstClub — a grocery platform. 
 - Cancel subscription
 
 **Admin side**
+
 - Edit base plan prices inline (click to edit)
 - Edit tier price multipliers — effective price matrix updates live
 - Toggle benefits on/off per tier; edit discount percentages
 - View all registered members
 
 **Backend design**
+
 - Strategy Pattern for tier evaluation (order count, order value, cohort)
 - Optimistic locking (`@Version`) on tier changes → HTTP 409 on conflict
 - Pessimistic lock + `SERIALIZABLE` isolation on subscribe → prevents duplicate active subscriptions
@@ -92,14 +76,14 @@ graph TD
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Backend | Spring Boot 3.2.5, Spring Data JPA, Spring Validation |
-| Database | PostgreSQL 15 (Docker) |
-| ORM | Hibernate / JPA with optimistic + pessimistic locking |
-| Frontend | React 18, Vite 5, Tailwind CSS 3, React Router v6 |
-| Build | Maven 3.9 |
-| Container | Docker Compose |
+| Layer     | Technology                                            |
+| --------- | ----------------------------------------------------- |
+| Backend   | Spring Boot 3.2.5, Spring Data JPA, Spring Validation |
+| Database  | PostgreSQL 15 (Docker)                                |
+| ORM       | Hibernate / JPA with optimistic + pessimistic locking |
+| Frontend  | React 18, Vite 5, Tailwind CSS 3, React Router v6     |
+| Build     | Maven 3.9                                             |
+| Container | Docker Compose                                        |
 
 ---
 
@@ -140,6 +124,7 @@ first-club-assignment/
 ## Getting Started (Local Development)
 
 ### Prerequisites
+
 - Java 21+
 - Maven 3.9+
 - Docker Desktop
@@ -185,13 +170,13 @@ The project is deployed on **Railway** (backend + PostgreSQL) and **Vercel** (fr
    ```
 4. Add these environment variables in Railway → Variables:
 
-   | Variable | Value |
-   |---|---|
-   | `SPRING_DATASOURCE_URL` | `${{Postgres.DATABASE_URL}}` (Railway reference variable) |
-   | `SPRING_DATASOURCE_USERNAME` | `${{Postgres.PGUSER}}` |
-   | `SPRING_DATASOURCE_PASSWORD` | `${{Postgres.PGPASSWORD}}` |
-   | `DDL_AUTO` | `create-drop` (or `update` after first run) |
-   | `ALLOWED_ORIGINS` | Your Vercel frontend URL (e.g. `https://firstclub-membership-pjq4.vercel.app`) |
+   | Variable                     | Value                                                                          |
+   | ---------------------------- | ------------------------------------------------------------------------------ |
+   | `SPRING_DATASOURCE_URL`      | `${{Postgres.DATABASE_URL}}` (Railway reference variable)                      |
+   | `SPRING_DATASOURCE_USERNAME` | `${{Postgres.PGUSER}}`                                                         |
+   | `SPRING_DATASOURCE_PASSWORD` | `${{Postgres.PGPASSWORD}}`                                                     |
+   | `DDL_AUTO`                   | `create-drop` (or `update` after first run)                                    |
+   | `ALLOWED_ORIGINS`            | Your Vercel frontend URL (e.g. `https://firstclub-membership-pjq4.vercel.app`) |
 
 5. Railway sets the `PORT` variable automatically — no action needed.
 
@@ -201,8 +186,8 @@ The project is deployed on **Railway** (backend + PostgreSQL) and **Vercel** (fr
 2. Set **Root Directory** to `frontend`.
 3. Add this environment variable in Vercel → Settings → Environment Variables:
 
-   | Variable | Value |
-   |---|---|
+   | Variable       | Value                                                    |
+   | -------------- | -------------------------------------------------------- |
    | `VITE_API_URL` | `https://firstclub-membership-production.up.railway.app` |
 
    > Vite bakes env vars at **build time** — always trigger a redeploy after adding or changing `VITE_API_URL`.
@@ -213,44 +198,48 @@ The project is deployed on **Railway** (backend + PostgreSQL) and **Vercel** (fr
 
 ## Demo Credentials
 
-| Role | Email | Password |
-|---|---|---|
-| Member | `alice@example.com` | *(no password — email only)* |
-| Member | `bob@example.com` | *(no password — email only)* |
-| Member | `carol@example.com` | *(no password — email only)* |
-| Admin | `admin@firstclub.com` | `admin` |
+| Role   | Email                 | Password                     |
+| ------ | --------------------- | ---------------------------- |
+| Member | `alice@example.com`   | _(no password — email only)_ |
+| Member | `bob@example.com`     | _(no password — email only)_ |
+| Member | `carol@example.com`   | _(no password — email only)_ |
+| Admin  | `admin@firstclub.com` | `admin`                      |
 
 ---
 
 ## API Endpoints
 
 ### Plans
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/api/plans` | List all plans |
-| `PUT` | `/api/admin/plans/{id}` | Update plan price / description |
+
+| Method | Endpoint                | Description                     |
+| ------ | ----------------------- | ------------------------------- |
+| `GET`  | `/api/plans`            | List all plans                  |
+| `PUT`  | `/api/admin/plans/{id}` | Update plan price / description |
 
 ### Tiers
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/api/tiers` | List all tiers with benefits |
-| `PUT` | `/api/admin/tiers/{id}` | Update tier price multiplier |
-| `PUT` | `/api/admin/benefits/{id}` | Toggle benefit / update discount |
+
+| Method | Endpoint                   | Description                      |
+| ------ | -------------------------- | -------------------------------- |
+| `GET`  | `/api/tiers`               | List all tiers with benefits     |
+| `PUT`  | `/api/admin/tiers/{id}`    | Update tier price multiplier     |
+| `PUT`  | `/api/admin/benefits/{id}` | Toggle benefit / update discount |
 
 ### Users
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/api/users` | Create user |
-| `GET` | `/api/admin/users` | List all users |
+
+| Method | Endpoint           | Description    |
+| ------ | ------------------ | -------------- |
+| `POST` | `/api/users`       | Create user    |
+| `GET`  | `/api/admin/users` | List all users |
 
 ### Subscriptions
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/api/subscriptions` | Subscribe to a plan + tier |
-| `GET` | `/api/subscriptions/users/{userId}` | Get active subscription |
-| `GET` | `/api/subscriptions/users/{userId}/history` | Subscription history |
-| `PUT` | `/api/subscriptions/{id}/tier` | Change tier (upgrade/downgrade) |
-| `DELETE` | `/api/subscriptions/{id}` | Cancel subscription |
+
+| Method   | Endpoint                                    | Description                     |
+| -------- | ------------------------------------------- | ------------------------------- |
+| `POST`   | `/api/subscriptions`                        | Subscribe to a plan + tier      |
+| `GET`    | `/api/subscriptions/users/{userId}`         | Get active subscription         |
+| `GET`    | `/api/subscriptions/users/{userId}/history` | Subscription history            |
+| `PUT`    | `/api/subscriptions/{id}/tier`              | Change tier (upgrade/downgrade) |
+| `DELETE` | `/api/subscriptions/{id}`                   | Cancel subscription             |
 
 ---
 
